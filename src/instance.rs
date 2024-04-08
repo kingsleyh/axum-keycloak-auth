@@ -47,6 +47,9 @@ pub struct KeycloakConfig {
     /// The retry strategy to be used: (maximum tries, delay in seconds).
     #[builder(default = (5, 1))]
     pub retry: (usize, u64),
+
+    // Optionally check cookies for the access token (using the provided cookie name).
+    pub cookie_name: Option<String>,
 }
 
 fn debug_decoding_keys(

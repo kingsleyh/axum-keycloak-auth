@@ -20,7 +20,39 @@ use super::{error::AuthError, role::ExtractRoles, role::Role};
 
 pub(crate) struct RawToken<'a>(pub(crate) &'a str);
 
-pub(crate) fn extract_jwt_token(headers: &HeaderMap<HeaderValue>) -> Result<&str, AuthError> {
+pub(crate) fn extract_jwt_token(
+    headers: &HeaderMap<HeaderValue>,
+    cookie_name: Option<String>,
+) -> Result<String, AuthError> {
+    let token = if let Some(name) = cookie_name {
+        if let Some(token) = optionally_extract_jwt_from_cookie(headers, name.as_str()) {
+            token.to_owned()
+        } else {
+            extract_jwt_token_from_bearer_header(headers)?.to_owned()
+        }
+    } else {
+        extract_jwt_token_from_bearer_header(headers)?.to_owned()
+    };
+
+    Ok(token)
+}
+
+fn optionally_extract_jwt_from_cookie<'a>(
+    headers: &'a HeaderMap<HeaderValue>,
+    cookie_name: &'a str,
+) -> Option<&'a str> {
+    let cookie = headers.get(http::header::COOKIE)?;
+    let cookie = cookie.to_str().ok()?;
+    let cookie = cookie
+        .split(';')
+        .find(|cookie| cookie.starts_with(cookie_name))?;
+    let cookie = cookie.split('=').nth(1)?;
+    Some(cookie)
+}
+
+fn extract_jwt_token_from_bearer_header(
+    headers: &HeaderMap<HeaderValue>,
+) -> Result<&str, AuthError> {
     headers
         .get(http::header::AUTHORIZATION)
         .ok_or(AuthError::MissingAuthorizationHeader)?

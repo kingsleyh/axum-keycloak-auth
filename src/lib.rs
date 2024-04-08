@@ -103,6 +103,7 @@
 //!         KeycloakConfig::builder()
 //!             .server(Url::parse("https://localhost:8443/").unwrap())
 //!             .realm(String::from("MyRealm"))
+//!             .cookie_name(None)
 //!             .build(),
 //!     );
 //!     let router = public_router().merge(protected_router(keycloak_auth_instance));

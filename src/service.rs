@@ -115,6 +115,6 @@ where
     R: Role,
     Extra: DeserializeOwned + Clone,
 {
-    let raw_token_str = extract_jwt_token(&request_headers)?;
-    kc_layer.validate_raw_token(raw_token_str).await
+    let raw_token = extract_jwt_token(&request_headers, kc_layer.instance.config.cookie_name.clone())?;
+    kc_layer.validate_raw_token(raw_token.as_str()).await
 }
